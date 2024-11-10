@@ -5,8 +5,8 @@ import typing
 import time
 from scapy.all import *
 
-from . import abstract_feature_generator
-from . import labeling_schemas
+import abstract_feature_generator
+import labeling_schemas
 
 from sklearn.preprocessing import OneHotEncoder
 
