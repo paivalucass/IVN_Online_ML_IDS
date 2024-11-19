@@ -16,6 +16,11 @@ AVAILABLE_ALGORITHMS = {
     # TODO: Add more algorithms
 }
 
+AVAILABLE_METRICS = {
+    "Accuracy": metrics.Accuracy
+    #TODO: Add more metrics 
+}
+
 
 class ModelGenerator():
     def __init__(self, config: typing.Dict, features_names):
@@ -27,7 +32,7 @@ class ModelGenerator():
         self._features_names = features_names
         self._dataset = self.__build_dataset(config["dataset_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
-        
+        self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]
 
     def __iter(self, features, labels):
         
@@ -58,8 +63,13 @@ class ModelGenerator():
         max_depth = model_config.get('max_depth', DEFAULT_MAX_DEPTH)
         max_size = model_config.get('max_size', DEFAULT_MAX_SIZE)
         seed = model_config.get('seed', DEFAULT_SEED)
+        # TODO: Add more hyperparameters
         
         return AVAILABLE_ALGORITHMS[self._algorithm](n_models=n_models, max_depth=max_depth, max_size=max_size, seed=seed)
     
     def run(self):
         
+        for x, y in self._dataset:
+            y_pred = self._model.predict_one(x)  # Faz uma previsão
+            self._model.learn_one(x, y)          # Atualiza o modelo com o exemplo atual
+            self._metric = self._metric.update(y, y_pred)  # Atualiza a métrica
