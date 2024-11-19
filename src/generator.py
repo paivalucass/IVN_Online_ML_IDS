@@ -1,8 +1,8 @@
-import gc
 import pandas as pd
 import numpy as np
 import typing
 import time
+from scipy.stats import entropy
 from scapy.all import *
 
 import abstract_feature_generator
@@ -24,7 +24,7 @@ LABELING_SCHEMA_FACTORY = {
     "TOW_IDS_dataset_multi_class": labeling_schemas.tow_ids_multi_class_labeling_schema
 }
 
-class CNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatureGenerator):
+class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractFeatureGenerator):
     def __init__(self, config: typing.Dict):
         self._window_size = config.get('window_size', DEFAULT_WINDOW_SIZE)
         self._number_of_bytes = config.get('number_of_bytes', DEFAULT_NUMBER_OF_BYTES)
@@ -125,17 +125,17 @@ class CNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatureGenerator
 
             np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)
             np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
-
-
-    def load_features(self, paths_dictionary: typing.Dict):
-        X = np.load(paths_dictionary['X_path'])
-        X = X.f.arr_0
-        if self._sum_x == False:
-            X = X.reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
-        print(f"shape X = {X.shape}")
-
+            
+    def __entropy_aggregation(self, arr):
+    # Calculate entropy along the axis=0 for each column independently
+        return np.apply_along_axis(lambda col: entropy(np.histogram(col, bins=10, density=True)[0]), axis=0, arr=arr)
+    
+    def __convert_labels(self, paths_dictionary: typing.Dict):
+                
         if (self._dataset == "TOW_IDS_dataset"):
+            # y = pd.read_csv(paths_dictionary['y_path'], nrows=100)
             y = pd.read_csv(paths_dictionary['y_path'])
+
             y = y.drop(columns=["Unnamed: 0"])
             if self._dataset == "TOW_IDS_multiclass":
                 y["Class"] = y["Class"].map(
@@ -148,20 +148,70 @@ class CNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatureGenerator
                         "F_I": 5
                     }
                 )
-            y = np.array(y["Class"].values)
+            labels_array = np.array(y["Class"].values)
         else:
             y = np.load(paths_dictionary['y_path'])
-            y = y.f.arr_0
-
-        print(f"shape Y = {y.shape}")
+            labels_array = y.f.arr_0
 
         if (self._multiclass):
-            y = y.reshape(-1, 1)
-            ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False).fit(y)
-            y = ohe.transform(y)
+            labels_array = labels_array.reshape(-1, 1)
+            ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False).fit(labels_array)
+            labels_array = ohe.transform(labels_array)
+            
+        print(f"shape Y = {labels_array.shape}")
 
-        return [[X[i], y[i]] for i in range(X.shape[0])]
+        return labels_array
 
+
+    def load_features_window_sized(self, paths_dictionary: typing.Dict):
+        X = np.load(paths_dictionary['X_path'])
+        X = X.f.arr_0
+        if self._sum_x == False:
+            features_array = np.array(X).reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
+        print(f"shape X = {features_array.shape}")    
+        
+        labels_array = self.__convert_labels(paths_dictionary)
+            
+        return features_array, labels_array
+
+        # return [[X[i], y[i]] for i in range(X.shape[0])]
+        
+    def load_features_entropy(self, paths_dictionary: typing.Dict):
+        X = np.load(paths_dictionary['X_path'])
+        X = X.f.arr_0
+        if self._sum_x == False:
+            features_array = np.array(X).reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
+        
+        features_array = features_array.squeeze(axis=1)
+
+        # Apply the entropy calculation across the 44 rows for each sample
+        features_array_entropy = np.array([self.__entropy_aggregation(sample) for sample in features_array])
+        
+        print(features_array_entropy)
+
+        print(f"shape X = {features_array_entropy.shape}") 
+        
+        labels_array = self.__convert_labels(paths_dictionary)
+        
+        print(labels_array)
+        
+        return features_array_entropy, labels_array
+
+    def load_features_without_window(self, paths_dictionary: typing.Dict):
+        X = np.load(paths_dictionary['X_path'])
+        X = X.f.arr_0
+
+        # Remove the window dimension by flattening it into a continuous feature array per sample
+        if not self._sum_x:
+            features_array = np.array(X).reshape(X.shape[0], self._window_size * self._number_of_columns)
+            # features_array = np.array(X).reshape((X.shape[0], -1, self._number_of_columns))
+
+        print(f"shape X = {features_array.shape}")
+        
+        labels_array = self.__convert_labels(paths_dictionary)
+        
+        return features_array, labels_array
+    
     def __read_raw_packets(self, pcap_filepath):
         raw_packets = rdpcap(pcap_filepath)
 

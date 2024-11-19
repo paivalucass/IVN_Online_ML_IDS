@@ -5,7 +5,6 @@ import json
 import argparse 
 from scapy.all import *
 import generator 
-import model_generator
 
 # AVAILABLE_MODEL_GENERATORS
 
