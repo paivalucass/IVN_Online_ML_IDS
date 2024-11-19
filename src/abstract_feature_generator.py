@@ -12,9 +12,9 @@ class AbstractFeatureGenerator(abc.ABC):
     def generate_features(self, paths_dictionary: typing.Dict):
         pass
 
-    @abc.abstractmethod
-    def load_features(self, paths_dictionary: typing.Dict):
-        pass
+    # @abc.abstractmethod
+    # def load_features(self, paths_dictionary: typing.Dict):
+    #     pass
 
     @abc.abstractmethod
     def benchmark_execution_time(self):

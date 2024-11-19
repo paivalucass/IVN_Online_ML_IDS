@@ -1,0 +1,39 @@
+{
+    "feature_generator": "OnlineMachineLearningFeatureGenerator",
+    "mode": "aggregate_features",
+    "config": {
+        "window_size": 44,
+        "window_slide": 1,
+        "number_of_bytes": 58,
+        "multiclass": false,
+        "labeling_schema": "TOW_IDS_dataset_one_class",
+        "dataset": "TOW_IDS_dataset",
+        "suffix": "test",
+        "sum_x": false
+    },
+    "paths": {
+        "training_packets_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
+        "test_packets_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
+        "y_train_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/y_test.csv",
+        "y_test_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/y_test.csv",
+        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test"
+    },
+    "load_paths": {
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/X_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/y_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.csv",
+        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz"
+    },
+    "dataset_load_paths": {
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_test_TOW_IDS_dataset_one_class.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_test_TOW_IDS_dataset_one_class.npz"    
+    },
+    "config_model": {
+        "algorithm": "ARFClassifier",
+        "n_models": 10,
+        "max_depth": null,
+        "max_size": 300.0,
+        "seed": null,
+        "feature_size": 116,
+        "metric": "Accuracy" 
+    }           
+}
