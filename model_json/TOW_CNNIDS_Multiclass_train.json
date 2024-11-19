@@ -11,11 +11,11 @@
         "sum_x": false
     },
     "paths": {
-        "training_packets_path": "/home/lucas/IDS_ONLINE/Automotive_Ethernet_with_Attack_original_10_17_19_50_training.pcap",
+        "training_packets_path": "/home/lucas/IDS_ONLINE/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
         "test_packets_path": "/home/lucas/IDS_ONLINE/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
-        "y_train_path": "/home/lucas/IDS_ONLINE/y_train.csv",
+        "y_train_path": "/home/lucas/IDS_ONLINE/y_test.csv",
         "y_test_path": "/home/lucas/IDS_ONLINE/y_test.csv",
-        "output_path": "/home/lucas/IDS_ONLINE/"
+        "output_path": "/home/lucas/IDS_ONLINE"
     },
     "load_paths": {
         "X_path": "/home/lfml/workspace/datasets/tow-intrusion-dataset/processed/X_train_TOW_IDS_dataset_multi_class_Wsize_44_Cols_116_Wslide_1_MC_False.npz",
