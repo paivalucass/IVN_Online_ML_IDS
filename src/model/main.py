@@ -22,11 +22,13 @@ def main():
     features_names = []
     for i in range(config["config_model"]["feature_size"]):
         features_names.append(f"feat_{i}")
-        
-    print(features_names)
-        
+                
     # Load model    
     model = model_generator.ModelGenerator(config, features_names)
+    
+    model.run()
+    
+    model.show_metric()
 
 
 if __name__ == "__main__":

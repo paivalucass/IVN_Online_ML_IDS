@@ -32,7 +32,10 @@ class ModelGenerator():
         self._features_names = features_names
         self._dataset = self.__build_dataset(config["dataset_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
-        self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]
+        # self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]()
+        self._metric = metrics.Accuracy()
+        print(self._metric)
+
 
     def __iter(self, features, labels):
         
@@ -51,10 +54,8 @@ class ModelGenerator():
         labels_array = np.load(paths_dictionary["y_path"])
         labels_array = labels_array.f.arr_0
         
-        print(features_array.shape)
-        
-        print(labels_array[0])
-        
+        print(f"Built dataset with shape: {features_array.shape}")
+            
         return self.__iter(features_array, labels_array)  
           
     def __build_algorithm(self, model_config: typing.Dict):
@@ -64,12 +65,19 @@ class ModelGenerator():
         max_size = model_config.get('max_size', DEFAULT_MAX_SIZE)
         seed = model_config.get('seed', DEFAULT_SEED)
         # TODO: Add more hyperparameters
-        
+                
         return AVAILABLE_ALGORITHMS[self._algorithm](n_models=n_models, max_depth=max_depth, max_size=max_size, seed=seed)
+        # return AVAILABLE_ALGORITHMS[self._algorithm]()
     
     def run(self):
-        
+
         for x, y in self._dataset:
-            y_pred = self._model.predict_one(x)  # Faz uma previsão
-            self._model.learn_one(x, y)          # Atualiza o modelo com o exemplo atual
-            self._metric = self._metric.update(y, y_pred)  # Atualiza a métrica
+            y_pred = self._model.predict_one(x) 
+            self._model.learn_one(x, y)
+            if y_pred is not None:
+                self._metric.update(y, y_pred)  
+            print(f"Predicted:{y_pred} / Real:{y}")
+
+    def show_metric(self):
+        print(self._metric)            
+    
