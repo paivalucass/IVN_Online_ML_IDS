@@ -44,15 +44,15 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         print(f"filter_avtp_packets = {self._filter_avtp_packets}")
 
     def generate_features(self, paths_dictionary: typing.Dict):
-        CNN_IDS_FEAT_GEN_AVAILABLE_DATASETS = {
+        ONLINE_MACHINE_LEARNING_AVAILABLE_DATASETS = {
             "AVTP_Intrusion_dataset": self.__avtp_dataset_generate_features,
             "TOW_IDS_dataset": self.__tow_ids_dataset_generate_features
         }
 
-        if self._dataset not in CNN_IDS_FEAT_GEN_AVAILABLE_DATASETS:
+        if self._dataset not in ONLINE_MACHINE_LEARNING_AVAILABLE_DATASETS:
             raise KeyError(f"Selected dataset: {self._dataset} is NOT available for CNN IDS Feature Generator!")
 
-        feature_generator = CNN_IDS_FEAT_GEN_AVAILABLE_DATASETS[self._dataset](paths_dictionary)
+        feature_generator = ONLINE_MACHINE_LEARNING_AVAILABLE_DATASETS[self._dataset](paths_dictionary)
 
     def __tow_ids_dataset_generate_features(self, paths_dictionary: typing.Dict):
         # Load raw packets
@@ -174,7 +174,6 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
             
         return features_array, labels_array
 
-        # return [[X[i], y[i]] for i in range(X.shape[0])]
         
     def load_features_entropy(self, paths_dictionary: typing.Dict):
         X = np.load(paths_dictionary['X_path'])
@@ -187,17 +186,13 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         # Apply the entropy calculation across the 44 rows for each sample
         features_array_entropy = np.array([self.__entropy_aggregation(sample) for sample in features_array])
         
-        print(features_array_entropy)
-
         print(f"shape X = {features_array_entropy.shape}") 
         
         labels_array = self.__convert_labels(paths_dictionary)
-        
-        print(labels_array)
-        
+                
         return features_array_entropy, labels_array
 
-    def load_features_without_window(self, paths_dictionary: typing.Dict):
+    def load_features_no_aggregation(self, paths_dictionary: typing.Dict):
         X = np.load(paths_dictionary['X_path'])
         X = X.f.arr_0
 
@@ -205,12 +200,18 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         if not self._sum_x:
             features_array = np.array(X).reshape(X.shape[0], self._window_size * self._number_of_columns)
             # features_array = np.array(X).reshape((X.shape[0], -1, self._number_of_columns))
+            
+        features_array = features_array.squeeze(axis=1)
+        
+        features_array_no_aggregation = np.array([sample[0] for sample in features_array])
 
-        print(f"shape X = {features_array.shape}")
+        print(f"shape X = {features_array_no_aggregation.shape}")
+        
+        print(features_array_no_aggregation)
         
         labels_array = self.__convert_labels(paths_dictionary)
         
-        return features_array, labels_array
+        return features_array_no_aggregation, labels_array
     
     def __read_raw_packets(self, pcap_filepath):
         raw_packets = rdpcap(pcap_filepath)
@@ -225,7 +226,6 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
                 raw_packets_list.append(raw(packet))
 
         return raw_packets_list
-
 
     def __convert_raw_packets(self, raw_packets_list, zero_padding=False):
         converted_packets_list = []
@@ -245,14 +245,12 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
 
         return np.array(converted_packets_list, dtype='uint8')
 
-
     def __is_array_in_list_of_arrays(self, array_to_check, list_np_arrays):
         # Reference:
         # https://stackoverflow.com/questions/23979146/check-if-numpy-array-is-in-list-of-numpy-arrays
         is_in_list = np.any(np.all(array_to_check == list_np_arrays, axis=1))
 
         return is_in_list
-
 
     def __generate_labels(self, packets_list, injected_packets):
         labels_list = []
