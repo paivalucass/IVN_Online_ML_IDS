@@ -8,8 +8,11 @@
         "multiclass": false,
         "labeling_schema": "TOW_IDS_dataset_one_class",
         "dataset": "TOW_IDS_dataset",
+        "remove_attack": null,
         "suffix": "test",
-        "sum_x": false
+        "aggregation_method": null,
+        "sum_x": false,
+        "reduce_dataset": false
     },
     "paths": {
         "training_packets_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
@@ -31,7 +34,7 @@
         "algorithm": "ARFClassifier",
         "n_models": 10,
         "max_depth": null,
-        "max_size": 300.0,
+        "max_size": 100.0,
         "seed": null,
         "feature_size": 116,
         "metric": "Accuracy" 

@@ -5,15 +5,20 @@ from river import forest
 from river import tree 
 from river import metrics
 from river import evaluate
+import logging
+import os
 
 DEFAULT_N_MODELS = 10
 DEFAULT_MAX_DEPTH = None
 DEFAULT_MAX_SIZE = 100.0
 DEFAULT_SEED = None
 
+LOG_FILE_PATH = "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/output/metrics.log"
+
+
 AVAILABLE_ALGORITHMS = {
     "ARFClassifier": forest.ARFClassifier
-    # TODO: Add more algorithms
+    #TODO: Add more algorithms
 }
 
 AVAILABLE_METRICS = {
@@ -32,10 +37,13 @@ class ModelGenerator():
         self._features_names = features_names
         self._dataset = self.__build_dataset(config["dataset_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
-        # self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]()
-        self._metric = metrics.Accuracy()
-        print(self._metric)
-
+        self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]()
+        self._logger = logging.getLogger(__name__)
+        logging.basicConfig(
+        filename=LOG_FILE_PATH,  
+        filemode='a',         
+        format='%(asctime)s - %(levelname)s - %(message)s', 
+        level=logging.INFO)    
 
     def __iter(self, features, labels):
         
@@ -79,5 +87,21 @@ class ModelGenerator():
             print(f"Predicted:{y_pred} / Real:{y}")
 
     def show_metric(self):
-        print(self._metric)            
-    
+        print(self._metric)
+        
+    def save_metric(self, config: typing.Dict):
+        
+        data_config = config["config"]
+        model_config = config["config_model"]
+        
+        self._logger.info(f"""METRIC {model_config['metric']}: {self._metric.get()} 
+                                 ALGORITHM: {model_config["algorithm"]} 
+                                 DATA: {data_config["labeling_schema"]}_{data_config["suffix"]} 
+                                 WINDOW SIZE: {data_config["window_size"]} 
+                                 WINDOW SLIDE: {data_config["window_slide"]} 
+                                 FEATURES SIZE: {model_config["feature_size"]} 
+                                 AGGREGATION_METHOD: {data_config["aggregation_method"]} 
+                                 NUMBER OF TREES: {model_config["n_models"]} 
+                                 MAX_DEPTH: {model_config["max_depth"]} 
+                                 SEED: {model_config["seed"]}
+                                 REMOVED ATTACK: {model_config["remove_attack"]}""")  

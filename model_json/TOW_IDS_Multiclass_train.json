@@ -1,14 +1,18 @@
 {
     "feature_generator": "OnlineMachineLearningFeatureGenerator",
+    "mode": "aggregate_features",
     "config": {
         "window_size": 44,
         "window_slide": 1,
         "number_of_bytes": 58,
-        "multiclass": true,
-        "labeling_schema": "TOW_IDS_dataset_multi_class",
+        "multiclass": false,
+        "labeling_schema": "TOW_IDS_dataset_one_class",
         "dataset": "TOW_IDS_dataset",
+        "remove_attack": null,
         "suffix": "train",
-        "sum_x": false
+        "aggregation_method": null,
+        "sum_x": false,
+        "reduce_dataset": false
     },
     "paths": {
         "training_packets_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/Automotive_Ethernet_with_Attack_original_10_17_19_50_training.pcap",
@@ -18,9 +22,21 @@
         "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_train"
     },
     "load_paths": {
-        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/X_train_TOW_IDS_dataset_multi_class_Wsize_44_Cols_116_Wslide_1_MC_True_sumX_False.npz",
-        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/y_train_TOW_IDS_dataset_multi_class_Wsize_44_Cols_116_Wslide_1_MC_True_sumX_False.csv",
-        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/final_csv"
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_train/X_train_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_train/y_train_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.csv",
+        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz"
     },
-    "mode": "load_features" 
+    "dataset_load_paths": {
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_test_TOW_IDS_dataset_one_class.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_test_TOW_IDS_dataset_one_class.npz"    
+    },
+    "config_model": {
+        "algorithm": "ARFClassifier",
+        "n_models": 10,
+        "max_depth": null,
+        "max_size": 100.0,
+        "seed": null,
+        "feature_size": 116,
+        "metric": "Accuracy" 
+    }       
 }
