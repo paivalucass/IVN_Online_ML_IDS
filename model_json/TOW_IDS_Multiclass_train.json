@@ -10,9 +10,10 @@
         "dataset": "TOW_IDS_dataset",
         "remove_attack": null,
         "suffix": "train",
-        "aggregation_method": null,
+        "aggregation_method": "Entropy",
         "sum_x": false,
-        "reduce_dataset": false
+        "randomize": false,
+        "reduced_dataset": [false, 5]
     },
     "paths": {
         "training_packets_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/raw_dataset/Automotive_Ethernet_with_Attack_original_10_17_19_50_training.pcap",
@@ -27,8 +28,8 @@
         "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz"
     },
     "dataset_load_paths": {
-        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_test_TOW_IDS_dataset_one_class.npz",
-        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_test_TOW_IDS_dataset_one_class.npz"    
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_train_TOW_IDS_dataset_one_class_Entropy.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_train_TOW_IDS_dataset_one_class_Entropy.npz"    
     },
     "config_model": {
         "algorithm": "ARFClassifier",
@@ -37,6 +38,6 @@
         "max_size": 100.0,
         "seed": null,
         "feature_size": 116,
-        "metric": "Accuracy" 
+        "metric": ["Accuracy", "Recall", "F1_Score", "Precision", "ConfusionMatrix"] 
     }       
 }

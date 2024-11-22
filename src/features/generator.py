@@ -17,6 +17,7 @@ AVTP_PACKETS_LENGHT = 438
 DEFAULT_LABELING_SCHEMA = "AVTP_Intrusion_dataset"
 DEFAULT_DATASET = "AVTP_Intrusion"
 DEFAULT_SUM_X = False
+DEFAULT_RANDOMIZE = False
 
 LABELING_SCHEMA_FACTORY = {
     "AVTP_Intrusion_dataset": labeling_schemas.avtp_intrusion_labeling_schema,
@@ -33,6 +34,8 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         self._labeling_schema = config.get('labeling_schema', DEFAULT_LABELING_SCHEMA)
         self._sum_x = config.get('sum_x', DEFAULT_SUM_X)
         self._data_suffix = config.get('suffix')
+        self._randomize = config.get('randomize', DEFAULT_RANDOMIZE)
+        self._reduced_dataset = config.get('reduced_dataset')
 
         self._multiclass = config.get('multiclass', False)
 
@@ -83,6 +86,14 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
         print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
 
+        # TODO: IF YOU WANT TO DO ANYTHING BEFORE THE DATASET IS LABELED DO IT BELLOW HERE
+        
+        if self._randomize:
+            preprocessed_packets, labels = self.__randomize_data(preprocessed_packets, labels)
+        
+        if self._reduced_dataset[0]:
+            preprocessed_packets, labels = self.__reduce_dataset(preprocessed_packets, labels, self._reduced_dataset[1])
+
         # Aggregate features and labels
         print(">> Aggregating and labeling...")
         aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
@@ -125,6 +136,29 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
 
             np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)
             np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
+    
+    def __randomize_data(x_data, y_data):
+        
+        x_data = np.array(x_data)
+        y_data = np.array(y_data)
+        permutation = np.random.permutation(len(x_data.shape[0]))
+        
+        x_data = x_data[permutation]
+        y_data = y_data[permutation]
+        
+        return x_data, y_data
+    
+    def __reduce_dataset(x_data, y_data, percentage):
+        
+        x_data = np.array(x_data)
+        y_data = np.array(y_data)
+        
+        size = (x_data.shape[0] * percentage) / 100
+        
+        x_data = x_data[:size]
+        y_data = y_data[:size]
+        
+        return x_data, y_data
             
     def __entropy_aggregation(self, arr):
     # Calculate entropy along the axis=0 for each column independently
@@ -162,7 +196,6 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
 
         return labels_array
 
-
     def load_features_window_sized(self, paths_dictionary: typing.Dict):
         X = np.load(paths_dictionary['X_path'])
         X = X.f.arr_0
@@ -173,7 +206,6 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         labels_array = self.__convert_labels(paths_dictionary)
             
         return features_array, labels_array
-
         
     def load_features_entropy(self, paths_dictionary: typing.Dict):
         X = np.load(paths_dictionary['X_path'])

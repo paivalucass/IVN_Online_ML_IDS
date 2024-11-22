@@ -27,7 +27,8 @@ def main():
     # Load model    
     model = model_generator.ModelGenerator(config, features_names)
     
-    # model.run()
+    # Run model
+    model.run()
     
     model.show_metric()
     

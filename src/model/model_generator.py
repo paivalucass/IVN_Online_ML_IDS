@@ -5,6 +5,7 @@ from river import forest
 from river import tree 
 from river import metrics
 from river import evaluate
+import river
 import logging
 import os
 
@@ -22,8 +23,11 @@ AVAILABLE_ALGORITHMS = {
 }
 
 AVAILABLE_METRICS = {
-    "Accuracy": metrics.Accuracy
-    #TODO: Add more metrics 
+    "Accuracy": metrics.Accuracy,
+    "Recall": metrics.Recall,
+    "F1_Score": metrics.F1,
+    "Precision": metrics.Precision,
+    "ConfusionMatrix": metrics.ConfusionMatrix
 }
 
 
@@ -37,7 +41,11 @@ class ModelGenerator():
         self._features_names = features_names
         self._dataset = self.__build_dataset(config["dataset_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
-        self._metric = AVAILABLE_METRICS[config["config_model"]["metric"]]()
+        self._metric = []
+        
+        for metrics in config["config_model"]["metric"]:
+            self._metric.append(AVAILABLE_METRICS[metrics]())
+            
         self._logger = logging.getLogger(__name__)
         logging.basicConfig(
         filename=LOG_FILE_PATH,  
@@ -83,25 +91,40 @@ class ModelGenerator():
             y_pred = self._model.predict_one(x) 
             self._model.learn_one(x, y)
             if y_pred is not None:
-                self._metric.update(y, y_pred)  
+                for metrics in self._metric:
+                    metrics.update(y, y_pred)  
             print(f"Predicted:{y_pred} / Real:{y}")
 
     def show_metric(self):
-        print(self._metric)
+        for metrics in self._metric:
+            print(metrics)
         
     def save_metric(self, config: typing.Dict):
         
         data_config = config["config"]
         model_config = config["config_model"]
         
-        self._logger.info(f"""METRIC {model_config['metric']}: {self._metric.get()} 
-                                 ALGORITHM: {model_config["algorithm"]} 
-                                 DATA: {data_config["labeling_schema"]}_{data_config["suffix"]} 
-                                 WINDOW SIZE: {data_config["window_size"]} 
-                                 WINDOW SLIDE: {data_config["window_slide"]} 
-                                 FEATURES SIZE: {model_config["feature_size"]} 
-                                 AGGREGATION_METHOD: {data_config["aggregation_method"]} 
-                                 NUMBER OF TREES: {model_config["n_models"]} 
-                                 MAX_DEPTH: {model_config["max_depth"]} 
-                                 SEED: {model_config["seed"]}
-                                 REMOVED ATTACK: {model_config["remove_attack"]}""")  
+        log = f""" ALGORITHM: {model_config["algorithm"]} 
+                                  DATA: {data_config["labeling_schema"]}_{data_config["suffix"]} 
+                                  WINDOW SIZE: {data_config["window_size"]} 
+                                  WINDOW SLIDE: {data_config["window_slide"]} 
+                                  FEATURES SIZE: {model_config["feature_size"]} 
+                                  AGGREGATION_METHOD: {data_config["aggregation_method"]} 
+                                  NUMBER OF TREES: {model_config["n_models"]} 
+                                  MAX_DEPTH: {model_config["max_depth"]} 
+                                  SEED: {model_config["seed"]}
+                                  REMOVED ATTACK: {data_config["remove_attack"]}"""
+                        
+        log += "\n                                 "
+
+        for i, metrics in enumerate(config['config_model']['metric']):
+            
+            if metrics == "ConfusionMatrix":
+                #TODO: Implement confusion matrix
+                continue
+            
+            log += f" | {metrics.upper()} {self._metric[i].get()}"
+            
+        log += " |"
+        self._logger.info(log)
+        
