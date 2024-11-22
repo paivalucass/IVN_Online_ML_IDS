@@ -198,12 +198,11 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
 
         # Remove the window dimension by flattening it into a continuous feature array per sample
         if not self._sum_x:
-            features_array = np.array(X).reshape(X.shape[0], self._window_size * self._number_of_columns)
-            # features_array = np.array(X).reshape((X.shape[0], -1, self._number_of_columns))
+            features_array = np.array(X).reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
             
         features_array = features_array.squeeze(axis=1)
-        
-        features_array_no_aggregation = np.array([sample[0] for sample in features_array])
+                        
+        features_array_no_aggregation = np.array(features_array[:, 0, :])
 
         print(f"shape X = {features_array_no_aggregation.shape}")
         

@@ -53,8 +53,8 @@ def main():
         # TODO: Add more aggregation methods
         # Is there a more efficient way instead of a if-else?
             
-        np.savez(f"{feature_generator_load_paths['output_path']}/X_{feature_generator_config['suffix']}_{feature_generator_config['labeling_schema']}_{feature_generator_config['aggregation_method']}_Wsize_{feature_generator_config['window_size']}_Cols_{feature_generator_config['number_of_bytes'] * 2}_Wslide_{feature_generator_config['window_slide']}_MC_{feature_generator_config['multiclass']}_RemovedAttack_{feature_generator_config["remove_attack"]}", features)
-        np.savez(f"{feature_generator_load_paths['output_path']}/Y_{feature_generator_config['suffix']}_{feature_generator_config['labeling_schema']}_{feature_generator_config['aggregation_method']}_Wsize_{feature_generator_config['window_size']}_Cols_{feature_generator_config['number_of_bytes'] * 2}_Wslide_{feature_generator_config['window_slide']}_MC_{feature_generator_config['multiclass']}_RemovedAttack_{feature_generator_config["remove_attack"]}", labels)
+        np.savez(f"{feature_generator_load_paths['output_path']}/X_{feature_generator_config['suffix']}_{feature_generator_config['labeling_schema']}_AggregationMethod_{feature_generator_config['aggregation_method']}_Wsize_{feature_generator_config['window_size']}_Cols_{feature_generator_config['number_of_bytes'] * 2}_Wslide_{feature_generator_config['window_slide']}_MC_{feature_generator_config['multiclass']}_RemovedAttack_{feature_generator_config['remove_attack']}", features)
+        np.savez(f"{feature_generator_load_paths['output_path']}/Y_{feature_generator_config['suffix']}_{feature_generator_config['labeling_schema']}_AggregationMethod_{feature_generator_config['aggregation_method']}_Wsize_{feature_generator_config['window_size']}_Cols_{feature_generator_config['number_of_bytes'] * 2}_Wslide_{feature_generator_config['window_slide']}_MC_{feature_generator_config['multiclass']}_RemovedAttack_{feature_generator_config['remove_attack']}", labels)
 
     elif mode == "generate_features":
         

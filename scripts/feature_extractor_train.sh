@@ -3,7 +3,7 @@
 # Define the virtual environment directory
 VENV_DIR="lacpvenv"
 REPOSITORY_PATH="IDS_ONLINE_FILES"
-PYTHON_PATH="IDS_ONLINE_FILES/src"
+PYTHON_PATH="IDS_ONLINE_FILES/src/features"
 PYTHON_FILE="main.py"
 JSON_PATH="IDS_ONLINE_FILES/model_jsons/TOW_IDS_One_Class_train.json"
 
