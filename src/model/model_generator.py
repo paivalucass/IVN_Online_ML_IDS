@@ -30,7 +30,6 @@ AVAILABLE_METRICS = {
     "ConfusionMatrix": metrics.ConfusionMatrix
 }
 
-
 class ModelGenerator():
     def __init__(self, config: typing.Dict, features_names):
         
@@ -39,7 +38,8 @@ class ModelGenerator():
         '''        
         self._algorithm = config["config_model"]["algorithm"]
         self._features_names = features_names
-        self._dataset = self.__build_dataset(config["dataset_load_paths"])
+        self._dataset_train = self.__build_dataset(config["dataset_train_load_paths"])
+        self._dataset_test = self.__build_dataset(config["dataset_test_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
         self._metric = []
         
@@ -85,12 +85,17 @@ class ModelGenerator():
         return AVAILABLE_ALGORITHMS[self._algorithm](n_models=n_models, max_depth=max_depth, max_size=max_size, seed=seed)
         # return AVAILABLE_ALGORITHMS[self._algorithm]()
     
-    def run(self):
-
-        for x, y in self._dataset:
+    def run(self, process):
+        
+        if process == "train":
+            dataset = self._dataset_train
+        elif process == "test":
+            dataset = self._dataset_test
+            
+        for x, y in dataset:
             y_pred = self._model.predict_one(x) 
             self._model.learn_one(x, y)
-            if y_pred is not None:
+            if y_pred is not None and process == "test":
                 for metrics in self._metric:
                     metrics.update(y, y_pred)  
             print(f"Predicted:{y_pred} / Real:{y}")
@@ -103,8 +108,23 @@ class ModelGenerator():
         
         data_config = config["config"]
         model_config = config["config_model"]
+
+        log = ""
+         
+        if model_config["train_and_test"]:
+            log = f""" ALGORITHM: {model_config["algorithm"]} 
+                                  DATA: {data_config["labeling_schema"]}_train + {data_config["labeling_schema"]}_test
+                                  WINDOW SIZE: {data_config["window_size"]} 
+                                  WINDOW SLIDE: {data_config["window_slide"]} 
+                                  FEATURES SIZE: {model_config["feature_size"]} 
+                                  AGGREGATION_METHOD: {data_config["aggregation_method"]} 
+                                  NUMBER OF TREES: {model_config["n_models"]} 
+                                  MAX_DEPTH: {model_config["max_depth"]} 
+                                  SEED: {model_config["seed"]}
+                                  REMOVED ATTACK: {data_config["remove_attack"]}"""
         
-        log = f""" ALGORITHM: {model_config["algorithm"]} 
+        else:
+            log = f""" ALGORITHM: {model_config["algorithm"]} 
                                   DATA: {data_config["labeling_schema"]}_{data_config["suffix"]} 
                                   WINDOW SIZE: {data_config["window_size"]} 
                                   WINDOW SLIDE: {data_config["window_slide"]} 
@@ -114,7 +134,7 @@ class ModelGenerator():
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
                                   REMOVED ATTACK: {data_config["remove_attack"]}"""
-                        
+                            
         log += "\n                                 "
 
         for i, metrics in enumerate(config['config_model']['metric']):

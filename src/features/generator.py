@@ -36,12 +36,14 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         self._data_suffix = config.get('suffix')
         self._randomize = config.get('randomize', DEFAULT_RANDOMIZE)
         self._reduced_dataset = config.get('reduced_dataset')
+        
+        self._remove_attacks_list = config.get('remove_attack')
 
         self._multiclass = config.get('multiclass', False)
 
         self._dataset = config.get('dataset', DEFAULT_DATASET)
 
-        self._output_path_suffix = f"{self._labeling_schema}_Wsize_{self._window_size}_Cols_{self._number_of_columns}_Wslide_{self._window_slide}_MC_{self._multiclass}_sumX_{self._sum_x}"
+        self._output_path_suffix = f"{self._labeling_schema}_Wsize_{self._window_size}_Cols_{self._number_of_columns}_Wslide_{self._window_slide}_MC_{self._multiclass}_sumX_{self._sum_x}_removedAttacks_{self._remove_attacks_list}"
 
         self._filter_avtp_packets = True if (self._labeling_schema) == "AVTP_Intrusion_dataset" else False
         print(f"filter_avtp_packets = {self._filter_avtp_packets}")
@@ -87,6 +89,15 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
         print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
 
         # TODO: IF YOU WANT TO DO ANYTHING BEFORE THE DATASET IS LABELED DO IT BELLOW HERE
+        
+        if self._remove_attacks_list is not None:
+            
+            print("REMOVING ATTACKS")
+            
+            for attack in self._remove_attacks_list:
+                preprocessed_packets, labels = self.__remove_attacks(preprocessed_packets, labels, attack)
+                
+            labels = pd.DataFrame(labels, columns=['Class', 'Description'])
         
         if self._randomize:
             preprocessed_packets, labels = self.__randomize_data(preprocessed_packets, labels)
@@ -136,7 +147,36 @@ class OnlineMachineLearningFeatureGenerator(abstract_feature_generator.AbstractF
 
             np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)
             np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
-    
+            
+    def __remove_attacks(self, x_data, y_data, attack):
+        
+        y_data = np.array(y_data)
+        x_data = np.array(x_data)
+        
+        index_initial = 0
+        index_final = 0
+        counter = 0 
+        
+        labels = y_data[:,1]
+        
+        attack_count = np.sum(labels == attack)
+        
+        for i, label in enumerate(labels):
+            if label == attack:
+                counter += 1
+                if counter == 1:
+                    index_initial = i
+                elif counter == attack_count:
+                    index_final = i+1
+                    break
+                
+        print(f"!!! DELETED {attack_count} {attack} FROM DATASET !!!")
+                    
+        x_data = np.delete(x_data, np.s_[index_initial : index_final], axis=0)
+        y_data = np.delete(y_data, np.s_[index_initial : index_final], axis=0)        
+            
+        return x_data, y_data
+                    
     def __randomize_data(x_data, y_data):
         
         x_data = np.array(x_data)

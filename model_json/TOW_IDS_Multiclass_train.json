@@ -1,6 +1,6 @@
 {
     "feature_generator": "OnlineMachineLearningFeatureGenerator",
-    "mode": "aggregate_features",
+    "mode": "generate_features",
     "config": {
         "window_size": 44,
         "window_slide": 1,
@@ -8,7 +8,7 @@
         "multiclass": false,
         "labeling_schema": "TOW_IDS_dataset_one_class",
         "dataset": "TOW_IDS_dataset",
-        "remove_attack": null,
+        "remove_attack": ["F_I"],
         "suffix": "train",
         "aggregation_method": "Entropy",
         "sum_x": false,
@@ -27,9 +27,13 @@
         "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_train/y_train_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.csv",
         "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz"
     },
-    "dataset_load_paths": {
+    "dataset_train_load_paths": {
+        "X_path":"/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_train_TOW_IDS_dataset_one_class_Entropy.npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_train_TOW_IDS_dataset_one_class_Entropy.npz" 
+    },
+    "dataset_test_load_paths": {
         "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_train_TOW_IDS_dataset_one_class_Entropy.npz",
-        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_train_TOW_IDS_dataset_one_class_Entropy.npz"    
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_train_TOW_IDS_dataset_one_class_Entropy.npz"
     },
     "config_model": {
         "algorithm": "ARFClassifier",

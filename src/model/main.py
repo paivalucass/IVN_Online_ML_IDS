@@ -27,12 +27,34 @@ def main():
     # Load model    
     model = model_generator.ModelGenerator(config, features_names)
     
-    # Run model
-    model.run()
-    
-    model.show_metric()
-    
-    model.save_metric(config)
+    if config["config_model"]["train_and_test"]:
+        
+        print("STARTING TRAINING AND TESTING")
+        
+        # Run model
+        model.run("train")
+        
+        # Run model
+        model.run("test")
+        
+        # Show output metric
+        model.show_metric()
+        
+        # Save matrics in a log file
+        model.save_metric(config)
+        
+    else:
+        
+        print("STARTING TESTING")
+
+        # Run model
+        model.run("test")
+        
+        # Show output metrics
+        model.show_metric()
+        
+        # Save matrics in a log file
+        model.save_metric(config)
 
 
 if __name__ == "__main__":
