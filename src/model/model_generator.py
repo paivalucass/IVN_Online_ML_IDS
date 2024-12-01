@@ -8,6 +8,7 @@ from river import evaluate
 import river
 import logging
 import os
+import time
 
 DEFAULT_N_MODELS = 10
 DEFAULT_MAX_DEPTH = None
@@ -42,6 +43,11 @@ class ModelGenerator():
         self._dataset_test = self.__build_dataset(config["dataset_test_load_paths"])
         self._model = self.__build_algorithm(config["config_model"])
         self._metric = []
+        self._start_time = 0
+        self._number_samples = 0
+        self._end_time = 0
+        self._number_of_test_samples = self.__test_dataset_samples(config["dataset_test_load_paths"])
+        self._time_per_sample = 0
         
         for metrics in config["config_model"]["metric"]:
             self._metric.append(AVAILABLE_METRICS[metrics]())
@@ -61,6 +67,12 @@ class ModelGenerator():
             raise KeyError(f"Wrong iter_array parameter format!")
         
         return self._dataset
+    
+    def __test_dataset_samples(self, paths_dictionary: typing.Dict):
+        features_array = np.load(paths_dictionary["X_path"])
+        features_array = features_array.f.arr_0
+        
+        return features_array.shape[0]
     
     def __build_dataset(self, paths_dictionary: typing.Dict):
         
@@ -90,15 +102,20 @@ class ModelGenerator():
         if process == "train":
             dataset = self._dataset_train
         elif process == "test":
+            self._start_time = time.time()
             dataset = self._dataset_test
             
         for x, y in dataset:
-            y_pred = self._model.predict_one(x) 
+            y_pred = self._model.predict_one(x)   
             self._model.learn_one(x, y)
             if y_pred is not None and process == "test":
                 for metrics in self._metric:
                     metrics.update(y, y_pred)  
-            print(f"Predicted:{y_pred} / Real:{y}")
+         
+        if process == "test":        
+            self._end_time = time.time()
+            self._time_per_sample = self._number_of_test_samples / (self._end_time - self._start_time)
+        
 
     def show_metric(self):
         for metrics in self._metric:
@@ -112,7 +129,9 @@ class ModelGenerator():
         log = ""
          
         if model_config["train_and_test"]:
-            log = f""" ALGORITHM: {model_config["algorithm"]} 
+            
+            if model_config["removed_from_train"] == False:
+                log = f""" ALGORITHM: {model_config["algorithm"]} 
                                   DATA: {data_config["labeling_schema"]}_train + {data_config["labeling_schema"]}_test
                                   WINDOW SIZE: {data_config["window_size"]} 
                                   WINDOW SLIDE: {data_config["window_slide"]} 
@@ -121,7 +140,23 @@ class ModelGenerator():
                                   NUMBER OF TREES: {model_config["n_models"]} 
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
-                                  REMOVED ATTACK: {data_config["remove_attack"]}"""
+                                  REMOVED FROM DATASET: {data_config["remove_attack"]}
+                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
+                                    
+            else:
+                log = f""" ALGORITHM: {model_config["algorithm"]} 
+                                  DATA: {data_config["labeling_schema"]}_train + {data_config["labeling_schema"]}_test
+                                  WINDOW SIZE: {data_config["window_size"]} 
+                                  WINDOW SLIDE: {data_config["window_slide"]} 
+                                  FEATURES SIZE: {model_config["feature_size"]} 
+                                  AGGREGATION_METHOD: {data_config["aggregation_method"]} 
+                                  NUMBER OF TREES: {model_config["n_models"]} 
+                                  MAX_DEPTH: {model_config["max_depth"]} 
+                                  SEED: {model_config["seed"]}
+                                  REMOVED FROM TRAIN: {data_config["remove_attack"]}
+                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
         
         else:
             log = f""" ALGORITHM: {model_config["algorithm"]} 
@@ -133,7 +168,9 @@ class ModelGenerator():
                                   NUMBER OF TREES: {model_config["n_models"]} 
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
-                                  REMOVED ATTACK: {data_config["remove_attack"]}"""
+                                  REMOVED FROM DATASET: {data_config["remove_attack"]}
+                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
                             
         log += "\n                                 "
 
