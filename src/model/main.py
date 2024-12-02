@@ -2,6 +2,8 @@ import model_generator
 import time
 import json
 import argparse
+import pickle
+
 
 def main():
     parser = argparse.ArgumentParser(description='Execute feature generation step')
@@ -27,12 +29,25 @@ def main():
     # Load model    
     model = model_generator.ModelGenerator(config, features_names)
     
+    feature_generator_name = config['feature_generator']
+    feature_generator_config = config['config']
+    feature_generator_paths = config['paths']
+    feature_generator_load_paths = config['load_paths']
+    mode = config["mode"]
+    
+    trained_model_saving_folder = config["config_model"]["pkl_saving_path"]
+    trained_model_saving_path = f"{trained_model_saving_folder}/TRAINED_{feature_generator_config['labeling_schema']}_AggregationMethod_{feature_generator_config['aggregation_method']}_Wsize_{feature_generator_config['window_size']}_Cols_{feature_generator_config['number_of_bytes'] * 2}_Wslide_{feature_generator_config['window_slide']}_MC_{feature_generator_config['multiclass']}_RemovedAttack_{feature_generator_config['remove_attack']}.pkl"
+    
     if config["config_model"]["train_and_test"]:
         
         print("STARTING TRAINING AND TESTING")
         
         # Run model
-        model.run("train")
+        trained_model = model.run("train")
+        
+        with open(trained_model_saving_path, 'wb') as file:
+            pickle.dump(trained_model, file)
+            print("Model Saved Successfully")
         
         # Run model
         model.run("test")

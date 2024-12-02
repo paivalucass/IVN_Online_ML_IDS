@@ -5,7 +5,7 @@ VENV_DIR="lacpvenv"
 REPOSITORY_PATH="IDS_ONLINE_FILES"
 PYTHON_PATH="IDS_ONLINE_FILES/src/model"
 PYTHON_FILE="main.py"
-JSON_PATH="IDS_ONLINE_FILES/model_jsons/TOW_IDS_One_Class_test.json"
+JSON_PATH="IDS_ONLINE_FILES/model_jsons/TOW_IDS_One_Class_test"
 
 # Check if the virtual environment exists
 if [ -d "$VENV_DIR" ]; then
@@ -29,12 +29,15 @@ fi
 
 cd ..
 
-if [ -f "$PYTHON_PATH/$PYTHON_FILE" ]; then 
-    echo Running python script from $PYTHON_PATH...
-    python3 $PYTHON_PATH/$PYTHON_FILE --config "$JSON_PATH"
+for i in {2..11}
+do
+    if [ -f "$PYTHON_PATH/$PYTHON_FILE" ]; then 
+        echo Running python script from $PYTHON_PATH...
+        python3 $PYTHON_PATH/$PYTHON_FILE --config "${JSON_PATH}_$i.json"
 
-else 
-    echo "Python script not found!"
-fi
+    else 
+        echo "Python script not found!"
+    fi
+done
 
-echo "Model generation complete."
+echo "Environment setup complete."

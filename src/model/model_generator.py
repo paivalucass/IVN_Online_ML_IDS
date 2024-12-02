@@ -9,17 +9,25 @@ import river
 import logging
 import os
 import time
+import pickle
+import enum
+from sklearn.ensemble import IsolationForest, RandomForestClassifier, HistGradientBoostingClassifier
 
 DEFAULT_N_MODELS = 10
 DEFAULT_MAX_DEPTH = None
 DEFAULT_MAX_SIZE = 100.0
 DEFAULT_SEED = None
 
+river_models = {"ARFClassifier", "HATClassifier", "HTClassifier"}
+sklearn_model = {"RandomForest"}
+
 LOG_FILE_PATH = "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/output/metrics.log"
 
-
 AVAILABLE_ALGORITHMS = {
-    "ARFClassifier": forest.ARFClassifier
+    "ARFClassifier": forest.ARFClassifier,
+    "RandomForest": RandomForestClassifier,
+    "HATClassifier": tree.HoeffdingAdaptiveTreeClassifier,
+    "HTClassifier": tree.HoeffdingTreeClassifier
     #TODO: Add more algorithms
 }
 
@@ -77,11 +85,11 @@ class ModelGenerator():
     def __build_dataset(self, paths_dictionary: typing.Dict):
         
         features_array = np.load(paths_dictionary["X_path"])
-        features_array = features_array.f.arr_0
+        features_array = features_array.f.arr_0      
         
         labels_array = np.load(paths_dictionary["y_path"])
         labels_array = labels_array.f.arr_0
-        
+    
         print(f"Built dataset with shape: {features_array.shape}")
             
         return self.__iter(features_array, labels_array)  
@@ -102,8 +110,8 @@ class ModelGenerator():
         if process == "train":
             dataset = self._dataset_train
         elif process == "test":
-            self._start_time = time.time()
             dataset = self._dataset_test
+            self._start_time = time.time()
             
         for x, y in dataset:
             y_pred = self._model.predict_one(x)   
@@ -114,9 +122,10 @@ class ModelGenerator():
          
         if process == "test":        
             self._end_time = time.time()
-            self._time_per_sample = self._number_of_test_samples / (self._end_time - self._start_time)
+            self._time_per_sample = (self._end_time - self._start_time) / self._number_of_test_samples
+            
+        return self._model
         
-
     def show_metric(self):
         for metrics in self._metric:
             print(metrics)
@@ -125,6 +134,8 @@ class ModelGenerator():
         
         data_config = config["config"]
         model_config = config["config_model"]
+        
+        elapsed_time = self._end_time - self._start_time
 
         log = ""
          
@@ -141,8 +152,9 @@ class ModelGenerator():
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
                                   REMOVED FROM DATASET: {data_config["remove_attack"]}
-                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
-                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
+                                  FULL TEST DATASET PREDICTION TIME: {elapsed_time} Seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample} Seconds
+                                  NUMBER OF TEST SAMPLES: {self._number_of_test_samples}"""
                                     
             else:
                 log = f""" ALGORITHM: {model_config["algorithm"]} 
@@ -155,8 +167,9 @@ class ModelGenerator():
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
                                   REMOVED FROM TRAIN: {data_config["remove_attack"]}
-                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
-                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
+                                  FULL TEST DATASET PREDICTION TIME: {elapsed_time} Seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample} Seconds
+                                  NUMBER OF TEST SAMPLES: {self._number_of_test_samples}"""
         
         else:
             log = f""" ALGORITHM: {model_config["algorithm"]} 
@@ -169,8 +182,9 @@ class ModelGenerator():
                                   MAX_DEPTH: {model_config["max_depth"]} 
                                   SEED: {model_config["seed"]}
                                   REMOVED FROM DATASET: {data_config["remove_attack"]}
-                                  FULL TEST DATASET PREDICTION TIME: {self._end_time - self._start_time} seconds
-                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample}"""
+                                  FULL TEST DATASET PREDICTION TIME: {elapsed_time} Seconds
+                                  PREDICTION TIME PER SAMPLE: {self._time_per_sample} Seconds
+                                  NUMBER OF TEST SAMPLES: {self._number_of_test_samples}"""
                             
         log += "\n                                 "
 
