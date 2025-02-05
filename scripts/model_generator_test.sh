@@ -29,15 +29,15 @@ fi
 
 cd ..
 
-for i in {2..11}
-do
-    if [ -f "$PYTHON_PATH/$PYTHON_FILE" ]; then 
-        echo Running python script from $PYTHON_PATH...
-        python3 $PYTHON_PATH/$PYTHON_FILE --config "${JSON_PATH}_$i.json"
+# for i in {2..11}
+# do
+if [ -f "$PYTHON_PATH/$PYTHON_FILE" ]; then 
+    echo Running python script from $PYTHON_PATH...
+    python3 $PYTHON_PATH/$PYTHON_FILE --config "${JSON_PATH}_11.json"
 
-    else 
-        echo "Python script not found!"
-    fi
-done
+else 
+    echo "Python script not found!"
+fi
+# done
 
 echo "Environment setup complete."

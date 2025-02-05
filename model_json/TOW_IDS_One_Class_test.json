@@ -1,6 +1,6 @@
 {
     "feature_generator": "OnlineMachineLearningFeatureGenerator",
-    "mode": "generate_features",
+    "mode": "aggregate_features",
     "config": {
         "window_size": 44,
         "window_slide": 1,
@@ -8,7 +8,7 @@
         "multiclass": false,
         "labeling_schema": "TOW_IDS_dataset_one_class",
         "dataset": "TOW_IDS_dataset",
-        "remove_attack": ["F_I"],
+        "remove_attack": ["P_I"],
         "suffix": "test",
         "aggregation_method": "Entropy",
         "sum_x": false,
@@ -23,26 +23,28 @@
         "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test"
     },
     "load_paths": {
-        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/X_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz",
-        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/y_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.csv",
-        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz"
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/X_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False_removedAttacks_['P_I'].npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/processed_test/y_test_TOW_IDS_dataset_one_class_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False_removedAttacks_['P_I'].csv",
+        "output_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/removed_aggregated_test"
     },
     "dataset_train_load_paths": {
-        "X_path":"/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_train_TOW_IDS_dataset_one_class_Entropy.npz",
-        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_train_TOW_IDS_dataset_one_class_Entropy.npz" 
+        "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/removed_aggregated_train/X_train_TOW_IDS_dataset_one_class_AggregationMethod_Entropy_Wsize_44_Cols_116_Wslide_1_MC_False_RemovedAttack_['P_I'].npz",
+        "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/removed_aggregated_train/Y_train_TOW_IDS_dataset_one_class_AggregationMethod_Entropy_Wsize_44_Cols_116_Wslide_1_MC_False_RemovedAttack_['P_I'].npz" 
     },
     "dataset_test_load_paths": {
         "X_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/X_test_TOW_IDS_dataset_one_class_Entropy.npz",
         "y_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/aggregated_npz/Y_test_TOW_IDS_dataset_one_class_Entropy.npz"
     },
     "config_model": {
-        "train_and_test": true,
+        "train_and_test": true, 
+        "removed_from_train": true,
         "algorithm": "ARFClassifier",
         "n_models": 10,
         "max_depth": null,
         "max_size": 100.0,
         "seed": null,
         "feature_size": 116,
-        "metric": ["Accuracy", "Recall", "F1_Score", "Precision", "ConfusionMatrix"] 
+        "metric": ["Accuracy", "Recall", "F1_Score", "Precision", "ConfusionMatrix"],
+        "pkl_saving_path": "/clusterlivenfs/lcap/ids-online/IDS_ONLINE_FILES/trained_models"
     }           
 }
